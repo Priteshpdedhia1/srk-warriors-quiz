@@ -8,9 +8,10 @@ const QS = [
 ];
 
 function newGM() {
+  let pc = 0;
   return new GameManager({
     loadQuestions: async () => QS,
-    persist: { game: vi.fn(), player: vi.fn(async () => "pid"), answer: vi.fn(), end: vi.fn() },
+    persist: { game: vi.fn(), player: vi.fn(async () => `p${++pc}`), answer: vi.fn(), end: vi.fn() },
   });
 }
 
@@ -51,6 +52,22 @@ describe("GameManager", () => {
     expect((await gm.submitAnswer(g.id, p.id, "q1", 0)).ok).toBe(true); // wrong pick
     expect((await gm.submitAnswer(g.id, p.id, "q1", 1)).ok).toBe(true); // changed to correct
     expect(gm.getPlayer(g.id, p.id)!.score).toBe(0); // no score during the question
+  });
+
+  it("auto-advances early (after grace) once all connected players have answered", async () => {
+    const gm = newGM();
+    const g = await gm.createGame({ ...DEFAULT_SETTINGS, totalQ: 2, timerSec: 30 });
+    const p1 = await gm.addPlayer(g.id, { name: "Raj", socketId: "s1" });
+    const p2 = await gm.addPlayer(g.id, { name: "Simran", socketId: "s2" });
+    const show = vi.fn(); gm.on("question:show", show);
+    await gm.start(g.id);
+    expect(show).toHaveBeenCalledTimes(1);          // Q1
+    await gm.submitAnswer(g.id, p1.id, "q1", 1);
+    await vi.advanceTimersByTimeAsync(2100);
+    expect(show).toHaveBeenCalledTimes(1);          // still Q1 — not everyone answered yet
+    await gm.submitAnswer(g.id, p2.id, "q1", 0);    // now all answered -> grace starts
+    await vi.advanceTimersByTimeAsync(2100);        // grace elapses, well before 30s
+    expect(show).toHaveBeenCalledTimes(2);          // advanced to Q2 early
   });
 
   it("scores the final (last-submitted) answer when the question closes", async () => {

@@ -20,7 +20,7 @@ interface LiveGame {
   players: Map<string, LivePlayer>;
   answers: Map<string, Map<string, LiveAnswer>>;
   questionShownAt: number; endsAt: number; remainingAtPause: number;
-  paused: boolean; timer?: NodeJS.Timeout; boardVisible: boolean;
+  paused: boolean; timer?: NodeJS.Timeout; advanceTimer?: NodeJS.Timeout; boardVisible: boolean;
   scored: Set<string>;   // question ids already finalized/scored (idempotent)
 }
 
@@ -34,6 +34,9 @@ export interface Persistence {
 export interface GMDeps { loadQuestions: () => Promise<SeedQuestion[]>; persist: Persistence; }
 
 const TICK_MS = 250;
+// Once every connected player has answered, wait this long (allowing last-second
+// answer changes + a visual beat) then auto-advance instead of running the full timer.
+const ALL_ANSWERED_GRACE_MS = 2000;
 const genPin = () => String(Math.floor(100000 + Math.random() * 900000));
 const stripQuestion = (q: SeedQuestion, index: number, total: number): PublicQuestion => ({
   id: q.id, index, total, text: q.text, options: q.options,
@@ -135,7 +138,10 @@ export class GameManager extends EventEmitter {
       if (remaining <= 0) this.next(g.id);
     }, TICK_MS);
   }
-  private clearTimer(g: LiveGame) { if (g.timer) { clearInterval(g.timer); g.timer = undefined; } }
+  private clearTimer(g: LiveGame) {
+    if (g.timer) { clearInterval(g.timer); g.timer = undefined; }
+    if (g.advanceTimer) { clearTimeout(g.advanceTimer); g.advanceTimer = undefined; }
+  }
 
   // Players may change their answer freely while the question is RUNNING; the last
   // submission wins. Scoring is deferred to finalizeQuestion() when the timer closes.
@@ -152,6 +158,13 @@ export class GameManager extends EventEmitter {
     // overwrite any previous selection for this question (isCorrect is provisional here)
     map.set(playerId, { selectedIndex: index, isCorrect: index === q.correctIndex, responseMs });
     this.emitAnalytics(g);
+    // If every connected player has now answered, schedule an early advance (after a
+    // short grace so the last answerer can still change their pick). The 30s timer
+    // remains as the fallback. Only one advance fires — whichever comes first.
+    const connected = [...g.players.values()].filter(p => p.connected);
+    if (!g.paused && !g.advanceTimer && connected.length > 0 && connected.every(p => map.has(p.id))) {
+      g.advanceTimer = setTimeout(() => { g.advanceTimer = undefined; this.next(g.id); }, ALL_ANSWERED_GRACE_MS);
+    }
     return { ok: true as const };
   }
 
@@ -198,6 +211,7 @@ export class GameManager extends EventEmitter {
   restartQ(gameId: string) { const g = this.req(gameId); this.showQuestion(g, g.currentIndex); }
   pause(gameId: string) {
     const g = this.req(gameId); if (g.status !== "RUNNING" || g.paused) return;
+    if (g.advanceTimer) { clearTimeout(g.advanceTimer); g.advanceTimer = undefined; }
     g.paused = true; g.remainingAtPause = g.endsAt - Date.now();
     this.emit("timer:tick", g.id, { remainingMs: Math.max(0, g.remainingAtPause), paused: true });
   }
