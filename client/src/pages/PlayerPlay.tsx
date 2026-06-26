@@ -22,7 +22,7 @@ export default function PlayerPlay() {
       const sel = useGame.getState().selectedIndex;
       if (sel === p.correctIndex) sfx.correct(); else if (sel !== undefined) sfx.wrong(); };
     const onScored = (p: any) => useGame.getState().set({ score: p.score, streak: p.streak });
-    const onOver = () => nav("/play/end");
+    const onOver = (p: any) => { useGame.getState().set({ over: p }); nav("/play/end"); };
     socket.on("question:show", onShow); socket.on("question:reveal", onReveal);
     socket.on("player:scored", onScored); socket.on("game:over", onOver);
     return () => { window.removeEventListener("popstate", block);
