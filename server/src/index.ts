@@ -8,6 +8,7 @@ import { auth } from "./routes/auth";
 import { prisma } from "./db";
 import { GameManager } from "./services/gameManager";
 import { registerSockets } from "./socket";
+import { ensureSeed } from "./services/ensureSeed";
 
 const app = express();
 app.use(cors({ origin: env.CORS_ORIGIN.split(",") }));
@@ -37,4 +38,6 @@ const gm = new GameManager({
 });
 
 registerSockets(io, gm);
-httpServer.listen(env.PORT, () => console.log(`server on :${env.PORT}`));
+ensureSeed(prisma)
+  .catch((e) => console.error("ensureSeed failed (continuing):", e))
+  .finally(() => httpServer.listen(env.PORT, () => console.log(`server on :${env.PORT}`)));
