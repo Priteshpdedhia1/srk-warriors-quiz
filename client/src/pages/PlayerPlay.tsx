@@ -12,6 +12,12 @@ export default function PlayerPlay() {
   const nav = useNavigate(); const g = useGame();
   const remaining = useCountdown(g.endsAt, g.paused);
 
+  // Mute background music while answering.
+  useEffect(() => {
+    useGame.getState().set({ quizActive: true });
+    return () => useGame.getState().set({ quizActive: false });
+  }, []);
+
   useEffect(() => {
     history.pushState(null, "", location.href);
     const block = () => history.pushState(null, "", location.href);

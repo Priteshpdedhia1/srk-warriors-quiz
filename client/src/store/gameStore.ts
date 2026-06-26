@@ -11,9 +11,10 @@ interface GS {
   analytics?: { answered: number; pending: number; liveAccuracy: number; distribution: number[] };
   over?: GameOverPayload;
   myAnswers: Record<number, number>;   // questionIndex -> my final selected option (for end review)
+  quizActive: boolean;                 // true while a question screen is mounted (mutes bg music)
   set: (p: Partial<GS>) => void; reset: () => void;
 }
-const init = { paused: false, locked: false, score: 0, streak: 0, players: [], boardVisible: false, myAnswers: {} };
+const init = { paused: false, locked: false, score: 0, streak: 0, players: [], boardVisible: false, myAnswers: {}, quizActive: false };
 export const useGame = create<GS>((set) => ({
   ...init,
   set: (p) => set(p),
