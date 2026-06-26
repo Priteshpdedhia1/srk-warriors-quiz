@@ -44,6 +44,16 @@ const gm = new GameManager({
 });
 
 registerSockets(io, gm);
+
+// Keep the free Render instance warm: it sleeps after ~15 min with no inbound
+// traffic, so we hit our own /health every 10 min. Render injects RENDER_EXTERNAL_URL.
+// (This keeps it awake while running; an external pinger is still needed to cold-wake
+// it before the event — see README.)
+const selfUrl = process.env.RENDER_EXTERNAL_URL;
+if (selfUrl) {
+  setInterval(() => { fetch(`${selfUrl}/health`).catch(() => {}); }, 10 * 60 * 1000);
+}
+
 ensureSeed(prisma)
   .catch((e) => console.error("ensureSeed failed (continuing):", e))
   .finally(() => httpServer.listen(env.PORT, () => console.log(`server on :${env.PORT}`)));
