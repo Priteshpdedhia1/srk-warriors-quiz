@@ -10,14 +10,18 @@ import { GameManager } from "./services/gameManager";
 import { registerSockets } from "./socket";
 import { ensureSeed } from "./services/ensureSeed";
 
+// "*" must be passed as the literal string (allow-all); the cors/socket.io packages
+// treat an array as an exact-match allowlist, so ["*"] would block every real origin.
+const corsOrigin = env.CORS_ORIGIN === "*" ? "*" : env.CORS_ORIGIN.split(",");
+
 const app = express();
-app.use(cors({ origin: env.CORS_ORIGIN.split(",") }));
+app.use(cors({ origin: corsOrigin }));
 app.use(express.json());
 app.use(health);
 app.use(auth);
 
 const httpServer = createServer(app);
-const io = new Server(httpServer, { cors: { origin: env.CORS_ORIGIN.split(",") } });
+const io = new Server(httpServer, { cors: { origin: corsOrigin } });
 
 const gm = new GameManager({
   loadQuestions: async () => {
