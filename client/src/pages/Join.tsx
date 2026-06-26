@@ -5,6 +5,7 @@ import { useGame } from "../store/gameStore";
 import GlassCard from "../components/GlassCard";
 import GoldButton from "../components/GoldButton";
 import ParticleBg from "../components/ParticleBg";
+import SrkLogo from "../components/SrkLogo";
 export default function Join() {
   const [sp] = useSearchParams();
   const [name, setName] = useState(""); const [city, setCity] = useState("");
@@ -23,10 +24,10 @@ export default function Join() {
   return (
     <div className="relative min-h-dvh flex items-center justify-center p-6">
       <ParticleBg />
-      <GlassCard className="z-10 w-full max-w-sm">
-        <div className="text-center text-4xl mb-2">👑</div>
-        <h2 className="font-cinzel text-2xl gold-text text-center mb-6">Join the Quiz</h2>
-        <form onSubmit={join} className="space-y-3">
+      <GlassCard className="z-10 w-full max-w-sm flex flex-col items-center">
+        <SrkLogo size={90} />
+        <h2 className="font-cinzel text-2xl gold-text text-center mb-6 mt-3">Join the Quiz</h2>
+        <form onSubmit={join} className="space-y-3 w-full">
           <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name" required
             className="w-full bg-ink-700 border border-gold-500/40 rounded-xl px-4 py-3 outline-none focus:border-gold-300" />
           <input value={city} onChange={e => setCity(e.target.value)} placeholder="City (optional)"
