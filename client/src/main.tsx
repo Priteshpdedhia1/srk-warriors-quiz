@@ -8,6 +8,7 @@ import Rules from "./pages/Rules";
 import HostLogin from "./pages/HostLogin";
 import HostDashboard from "./pages/HostDashboard";
 import HostCreate from "./pages/HostCreate";
+import HostResults from "./pages/HostResults";
 import HostGame from "./pages/HostGame";
 import HostEnd from "./pages/HostEnd";
 import Join from "./pages/Join";
@@ -21,6 +22,7 @@ const router = createBrowserRouter([
   { path: "/host/login", element: <HostLogin /> },
   { path: "/host", element: <HostDashboard /> },
   { path: "/host/create", element: <HostCreate /> },
+  { path: "/host/results", element: <HostResults /> },
   { path: "/host/game/:gameId", element: <HostGame /> },
   { path: "/host/end/:gameId", element: <HostEnd /> },
   { path: "/join", element: <Join /> },
