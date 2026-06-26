@@ -1,7 +1,7 @@
 import { EventEmitter } from "node:events";
 import { scoreAnswer } from "./scoring";
 import { resolveRanking } from "./ranking";
-import type { GameSettings, PublicQuestion, GameStatus } from "../../../shared/types";
+import type { GameSettings, PublicQuestion, GameStatus, PlayerStateSnapshot } from "../../../shared/types";
 
 export interface SeedQuestion {
   id: string; text: string; options: string[]; correctIndex: number;
@@ -81,6 +81,25 @@ export class GameManager extends EventEmitter {
     if (!g || !p) return null;
     p.connected = true; p.socketId = socketId; this.emitLobby(g);
     return { g, p };
+  }
+
+  reconnectByPlayer(playerId: string, socketId: string): { gameId: string; state: PlayerStateSnapshot } | null {
+    for (const g of this.games.values()) {
+      const p = g.players.get(playerId);
+      if (!p) continue;
+      p.connected = true; p.socketId = socketId; this.emitLobby(g);
+      const q = g.questions[g.currentIndex];
+      const answered = q ? (g.answers.get(q.id)?.has(playerId) ?? false) : false;
+      const state: PlayerStateSnapshot = {
+        status: g.status,
+        question: q && g.status !== "ENDED" ? stripQuestion(q, g.currentIndex, g.questions.length) : undefined,
+        endsAt: g.status === "RUNNING" ? g.endsAt : undefined,
+        alreadyAnswered: answered,
+        score: p.score, streak: p.streak,
+      };
+      return { gameId: g.id, state };
+    }
+    return null;
   }
   disconnectSocket(socketId: string) {
     for (const g of this.games.values())
