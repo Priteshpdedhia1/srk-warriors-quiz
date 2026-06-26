@@ -7,3 +7,5 @@ dist/
 data/
 *.tsbuildinfo
 .neon
+.claude/
+skills-lock.json
