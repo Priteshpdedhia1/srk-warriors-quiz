@@ -128,7 +128,10 @@ export class GameManager extends EventEmitter {
       if (g.paused) return;
       const remaining = g.endsAt - Date.now();
       this.emit("timer:tick", g.id, { remainingMs: Math.max(0, remaining), paused: false });
-      if (remaining <= 0) this.reveal(g.id);
+      // Auto-advance: when the 30s timer expires, move straight to the next question
+      // (no per-question reveal during the game). After the last question, end() fires
+      // and the full answer key + scores are revealed together.
+      if (remaining <= 0) this.next(g.id);
     }, TICK_MS);
   }
   private clearTimer(g: LiveGame) { if (g.timer) { clearInterval(g.timer); g.timer = undefined; } }
@@ -153,8 +156,7 @@ export class GameManager extends EventEmitter {
     this.emit("player:scored", g.id, playerId, {
       score: p.score, streak: p.streak, isCorrect, gainedMs: responseMs });
     this.emitAnalytics(g);
-    if (map.size >= [...g.players.values()].filter(x => x.connected).length && g.settings.autoAdvance)
-      this.reveal(g.id);
+    // No early advance — every question runs the full timer for predictable live pacing.
     return { ok: true as const };
   }
 
@@ -195,7 +197,10 @@ export class GameManager extends EventEmitter {
     const g = this.req(gameId); this.clearTimer(g); g.status = "ENDED";
     await this.deps.persist.end(gameId);
     const rows = this.leaderboard(g);
-    this.emit("game:over", g.id, { podium: rows.slice(0, 3), fullRanking: rows });
+    const answerKey = g.questions.map((q, i) => ({
+      index: i, text: q.text, options: q.options, correctIndex: q.correctIndex, explanation: q.explanation,
+    }));
+    this.emit("game:over", g.id, { podium: rows.slice(0, 3), fullRanking: rows, answerKey });
   }
 
   leaderboard(g: LiveGame) {

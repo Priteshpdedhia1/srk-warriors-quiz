@@ -8,9 +8,9 @@ export default function PlayerEnd() {
   const me = over?.fullRanking.find(r => r.playerId === playerId);
   const top3 = me ? me.rank <= 3 : false;
   return (
-    <div className="relative min-h-dvh flex items-center justify-center p-6">
+    <div className="relative min-h-dvh flex flex-col items-center p-6 gap-6">
       <ParticleBg />{top3 && <Fireworks />}
-      <GlassCard className="z-10 text-center max-w-sm">
+      <GlassCard className="z-10 text-center max-w-sm w-full">
         <div className="text-5xl mb-2">{top3 ? "🏆" : "👑"}</div>
         <h2 className="font-cinzel text-3xl gold-text mb-1">{me ? `Rank #${me.rank}` : "Thanks for playing!"}</h2>
         {me && <>
@@ -22,6 +22,20 @@ export default function PlayerEnd() {
           </div>
         </>}
       </GlassCard>
+
+      {over?.answerKey && (
+        <div className="z-10 w-full max-w-sm">
+          <h3 className="font-cinzel text-xl gold-text text-center mb-3">Answer Key</h3>
+          <div className="space-y-2">
+            {over.answerKey.map((q) => (
+              <div key={q.index} className="glass p-3">
+                <p className="text-sm font-semibold mb-1">Q{q.index + 1}. {q.text}</p>
+                <p className="text-green-400 text-sm">✓ {q.options[q.correctIndex]}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

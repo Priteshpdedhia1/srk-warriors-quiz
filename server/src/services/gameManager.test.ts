@@ -55,14 +55,30 @@ describe("GameManager", () => {
     expect(gm.getPlayer(g.id, p.id)!.score).toBe(1);
   });
 
-  it("emits question:reveal automatically when the timer expires", async () => {
+  it("auto-advances to the next question when the timer expires", async () => {
     const gm = newGM();
     const g = await gm.createGame({ ...DEFAULT_SETTINGS, totalQ: 2, timerSec: 1 });
-    const reveal = vi.fn();
-    gm.on("question:reveal", reveal);
+    const show = vi.fn();
+    gm.on("question:show", show);
     await gm.start(g.id);
+    expect(show).toHaveBeenCalledOnce(); // Q1
     await vi.advanceTimersByTimeAsync(1100);
-    expect(reveal).toHaveBeenCalledOnce();
-    expect(reveal.mock.calls[0][1].correctIndex).toBe(1);
+    expect(show).toHaveBeenCalledTimes(2); // auto-advanced to Q2
+    expect(show.mock.calls[1][1].question.index).toBe(1);
+  });
+
+  it("ends with a full answer key after the last question's timer expires", async () => {
+    const gm = newGM();
+    const g = await gm.createGame({ ...DEFAULT_SETTINGS, totalQ: 2, timerSec: 1 });
+    const over = vi.fn();
+    gm.on("game:over", over);
+    await gm.start(g.id);
+    await vi.advanceTimersByTimeAsync(1100); // Q1 -> Q2
+    await vi.advanceTimersByTimeAsync(1100); // Q2 -> end
+    expect(over).toHaveBeenCalledOnce();
+    const payload = over.mock.calls[0][1];
+    expect(payload.answerKey).toHaveLength(2);
+    expect(payload.answerKey[0].correctIndex).toBe(1);
+    expect(payload.answerKey[1].correctIndex).toBe(0);
   });
 });

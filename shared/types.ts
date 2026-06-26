@@ -33,9 +33,14 @@ export interface RevealPayload {
   pctCorrect: number;       // 0..100
 }
 
+export interface AnswerKeyItem {
+  index: number; text: string; options: string[]; correctIndex: number; explanation: string;
+}
+
 export interface GameOverPayload {
   podium: LeaderboardRow[];          // up to 3 (joint-aware)
   fullRanking: LeaderboardRow[];
+  answerKey: AnswerKeyItem[];        // all questions + correct answers, revealed at end
 }
 
 export interface GameSettings {
