@@ -4,7 +4,7 @@ import ParticleBg from "../components/ParticleBg";
 import Fireworks from "../components/Fireworks";
 import { ms2s, pct } from "../lib/format";
 export default function PlayerEnd() {
-  const { over, playerId } = useGame();
+  const { over, playerId, myAnswers } = useGame();
   const me = over?.fullRanking.find(r => r.playerId === playerId);
   const top3 = me ? me.rank <= 3 : false;
   return (
@@ -25,14 +25,24 @@ export default function PlayerEnd() {
 
       {over?.answerKey && (
         <div className="z-10 w-full max-w-sm">
-          <h3 className="font-cinzel text-xl gold-text text-center mb-3">Answer Key</h3>
+          <h3 className="font-cinzel text-xl gold-text text-center mb-3">Your Answers</h3>
           <div className="space-y-2">
-            {over.answerKey.map((q) => (
-              <div key={q.index} className="glass p-3">
-                <p className="text-sm font-semibold mb-1">Q{q.index + 1}. {q.text}</p>
-                <p className="text-green-400 text-sm">✓ {q.options[q.correctIndex]}</p>
-              </div>
-            ))}
+            {over.answerKey.map((q) => {
+              const mine = myAnswers[q.index];
+              const answered = mine !== undefined;
+              const right = mine === q.correctIndex;
+              return (
+                <div key={q.index} className="glass p-3" style={{ borderColor: right ? "#4ade80" : "#f87171" }}>
+                  <p className="text-sm font-semibold mb-1">{right ? "✅" : "❌"} Q{q.index + 1}. {q.text}</p>
+                  {!right && (
+                    <p className="text-red-400 text-sm">
+                      Your answer: {answered ? q.options[mine] : "— no answer —"}
+                    </p>
+                  )}
+                  <p className="text-green-400 text-sm">Correct: {q.options[q.correctIndex]}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

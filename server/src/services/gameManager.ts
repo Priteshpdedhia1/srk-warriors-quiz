@@ -21,6 +21,7 @@ interface LiveGame {
   answers: Map<string, Map<string, LiveAnswer>>;
   questionShownAt: number; endsAt: number; remainingAtPause: number;
   paused: boolean; timer?: NodeJS.Timeout; boardVisible: boolean;
+  scored: Set<string>;   // question ids already finalized/scored (idempotent)
 }
 
 export interface Persistence {
@@ -54,7 +55,7 @@ export class GameManager extends EventEmitter {
     const game: LiveGame = {
       id, pin, status: "LOBBY", settings, questions, currentIndex: -1,
       players: new Map(), answers: new Map(), questionShownAt: 0, endsAt: 0,
-      remainingAtPause: 0, paused: false, boardVisible: false,
+      remainingAtPause: 0, paused: false, boardVisible: false, scored: new Set(),
     };
     this.games.set(id, game);
     await this.deps.persist.game({ id, pin, settings });
@@ -128,14 +129,16 @@ export class GameManager extends EventEmitter {
       if (g.paused) return;
       const remaining = g.endsAt - Date.now();
       this.emit("timer:tick", g.id, { remainingMs: Math.max(0, remaining), paused: false });
-      // Auto-advance: when the 30s timer expires, move straight to the next question
-      // (no per-question reveal during the game). After the last question, end() fires
-      // and the full answer key + scores are revealed together.
+      // Auto-advance: when the 30s timer expires, finalize this question's answers
+      // (scoring last-submitted answer per player) and move to the next. After the last
+      // question, end() fires and the full answer key + scores are revealed together.
       if (remaining <= 0) this.next(g.id);
     }, TICK_MS);
   }
   private clearTimer(g: LiveGame) { if (g.timer) { clearInterval(g.timer); g.timer = undefined; } }
 
+  // Players may change their answer freely while the question is RUNNING; the last
+  // submission wins. Scoring is deferred to finalizeQuestion() when the timer closes.
   async submitAnswer(gameId: string, playerId: string, questionId: string, index: number) {
     const g = this.games.get(gameId);
     if (!g || g.status !== "RUNNING") return { ok: false as const, error: "No active question" };
@@ -143,21 +146,35 @@ export class GameManager extends EventEmitter {
     if (!q || q.id !== questionId) return { ok: false as const, error: "Question mismatch" };
     const p = g.players.get(playerId);
     if (!p) return { ok: false as const, error: "Unknown player" };
-    const map = g.answers.get(q.id)!;
-    if (map.has(playerId)) return { ok: false as const, error: "You already answered" };
     if (index < 0 || index > 3) return { ok: false as const, error: "Invalid option" };
+    const map = g.answers.get(q.id)!;
     const responseMs = Date.now() - g.questionShownAt;
-    const isCorrect = index === q.correctIndex;
-    map.set(playerId, { selectedIndex: index, isCorrect, responseMs });
-    const next = scoreAnswer(p, isCorrect);
-    p.score = next.score; p.streak = next.streak; p.bestStreak = next.bestStreak;
-    p.completedAt = Date.now();
-    await this.deps.persist.answer({ gameId, playerId, questionId, selectedIndex: index, isCorrect, responseMs });
-    this.emit("player:scored", g.id, playerId, {
-      score: p.score, streak: p.streak, isCorrect, gainedMs: responseMs });
+    // overwrite any previous selection for this question (isCorrect is provisional here)
+    map.set(playerId, { selectedIndex: index, isCorrect: index === q.correctIndex, responseMs });
     this.emitAnalytics(g);
-    // No early advance — every question runs the full timer for predictable live pacing.
     return { ok: true as const };
+  }
+
+  // Finalize the current question: score each player's final answer (in question order,
+  // so streaks stay correct), persist it, and notify the player. Idempotent per question.
+  private finalizeQuestion(g: LiveGame) {
+    if (g.currentIndex < 0) return;
+    const q = g.questions[g.currentIndex];
+    if (!q || g.scored.has(q.id)) return;
+    g.scored.add(q.id);
+    const map = g.answers.get(q.id) ?? new Map<string, LiveAnswer>();
+    for (const [playerId, ans] of map) {
+      const p = g.players.get(playerId);
+      if (!p) continue;
+      ans.isCorrect = ans.selectedIndex === q.correctIndex;
+      const next = scoreAnswer(p, ans.isCorrect);
+      p.score = next.score; p.streak = next.streak; p.bestStreak = next.bestStreak;
+      p.completedAt = Date.now();
+      void this.deps.persist.answer({ gameId: g.id, playerId, questionId: q.id,
+        selectedIndex: ans.selectedIndex, isCorrect: ans.isCorrect, responseMs: ans.responseMs });
+      this.emit("player:scored", g.id, playerId, {
+        score: p.score, streak: p.streak, isCorrect: ans.isCorrect, gainedMs: ans.responseMs });
+    }
   }
 
   reveal(gameId: string) {
@@ -175,7 +192,7 @@ export class GameManager extends EventEmitter {
       distribution, pctCorrect: answered ? (correct / answered) * 100 : 0 });
   }
 
-  next(gameId: string) { const g = this.req(gameId); this.showQuestion(g, g.currentIndex + 1); }
+  next(gameId: string) { const g = this.req(gameId); this.finalizeQuestion(g); this.showQuestion(g, g.currentIndex + 1); }
   prev(gameId: string) { const g = this.req(gameId); this.showQuestion(g, Math.max(0, g.currentIndex - 1)); }
   skip(gameId: string) { this.next(gameId); }
   restartQ(gameId: string) { const g = this.req(gameId); this.showQuestion(g, g.currentIndex); }
@@ -194,7 +211,7 @@ export class GameManager extends EventEmitter {
   hideBoard(gameId: string) { const g = this.req(gameId); g.boardVisible = false; this.emit("leaderboard:hide", g.id); }
 
   async end(gameId: string) {
-    const g = this.req(gameId); this.clearTimer(g); g.status = "ENDED";
+    const g = this.req(gameId); this.finalizeQuestion(g); this.clearTimer(g); g.status = "ENDED";
     await this.deps.persist.end(gameId);
     const rows = this.leaderboard(g);
     const answerKey = g.questions.map((q, i) => ({

@@ -10,12 +10,13 @@ interface GS {
   leaderboard?: LeaderboardRow[]; boardVisible: boolean;
   analytics?: { answered: number; pending: number; liveAccuracy: number; distribution: number[] };
   over?: GameOverPayload;
+  myAnswers: Record<number, number>;   // questionIndex -> my final selected option (for end review)
   set: (p: Partial<GS>) => void; reset: () => void;
 }
-const init = { paused: false, locked: false, score: 0, streak: 0, players: [], boardVisible: false };
+const init = { paused: false, locked: false, score: 0, streak: 0, players: [], boardVisible: false, myAnswers: {} };
 export const useGame = create<GS>((set) => ({
   ...init,
   set: (p) => set(p),
-  reset: () => set({ ...init, question: undefined, reveal: undefined, over: undefined,
+  reset: () => set({ ...init, myAnswers: {}, question: undefined, reveal: undefined, over: undefined,
     leaderboard: undefined, analytics: undefined, selectedIndex: undefined, endsAt: undefined }),
 }));

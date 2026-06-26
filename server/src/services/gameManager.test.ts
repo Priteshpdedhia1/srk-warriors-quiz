@@ -43,15 +43,24 @@ describe("GameManager", () => {
     expect(payload.endsAt).toBeGreaterThan(Date.now());
   });
 
-  it("scores a correct answer and blocks a second submission", async () => {
+  it("lets a player change their answer while the question runs; not scored until it closes", async () => {
     const gm = newGM();
     const g = await gm.createGame({ ...DEFAULT_SETTINGS, totalQ: 2, timerSec: 30 });
     const p = await gm.addPlayer(g.id, { name: "Raj", socketId: "s1" });
     await gm.start(g.id);
-    const r1 = await gm.submitAnswer(g.id, p.id, "q1", 1);
-    expect(r1.ok).toBe(true);
-    const r2 = await gm.submitAnswer(g.id, p.id, "q1", 2);
-    expect(r2).toEqual({ ok: false, error: expect.stringMatching(/already/i) });
+    expect((await gm.submitAnswer(g.id, p.id, "q1", 0)).ok).toBe(true); // wrong pick
+    expect((await gm.submitAnswer(g.id, p.id, "q1", 1)).ok).toBe(true); // changed to correct
+    expect(gm.getPlayer(g.id, p.id)!.score).toBe(0); // no score during the question
+  });
+
+  it("scores the final (last-submitted) answer when the question closes", async () => {
+    const gm = newGM();
+    const g = await gm.createGame({ ...DEFAULT_SETTINGS, totalQ: 2, timerSec: 1 });
+    const p = await gm.addPlayer(g.id, { name: "Raj", socketId: "s1" });
+    await gm.start(g.id);
+    await gm.submitAnswer(g.id, p.id, "q1", 0); // wrong
+    await gm.submitAnswer(g.id, p.id, "q1", 1); // changed to correct (q1 correctIndex=1)
+    await vi.advanceTimersByTimeAsync(1100);    // timer closes q1 -> finalize + advance
     expect(gm.getPlayer(g.id, p.id)!.score).toBe(1);
   });
 

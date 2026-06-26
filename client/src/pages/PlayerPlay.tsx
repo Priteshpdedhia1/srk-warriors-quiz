@@ -30,20 +30,20 @@ export default function PlayerPlay() {
       socket.off("player:scored", onScored); socket.off("game:over", onOver); };
   }, []);
 
+  // Players can change their pick freely until the timer ends; the last tap wins.
   const answer = (i: number) => {
-    if (g.locked || !g.question) return;
-    useGame.getState().set({ selectedIndex: i, locked: true });
-    socket.emit("answer:submit", { questionId: g.question.id, index: i }, (r) => {
-      if (!r.ok) useGame.getState().set({ locked: false, selectedIndex: undefined });
+    const q = useGame.getState().question;
+    if (!q) return;
+    useGame.getState().set({
+      selectedIndex: i,
+      myAnswers: { ...useGame.getState().myAnswers, [q.index]: i },
     });
+    socket.emit("answer:submit", { questionId: q.id, index: i }, () => {});
   };
 
   const q = g.question;
   if (!q) return <div className="min-h-dvh flex items-center justify-center"><p>Loading…</p></div>;
-  const stateFor = (i: number) => {
-    if (g.reveal) return i === g.reveal.correctIndex ? "correct" : i === g.selectedIndex ? "wrong" : "dim";
-    return i === g.selectedIndex ? "selected" : "idle";
-  };
+  const stateFor = (i: number) => (i === g.selectedIndex ? "selected" : "idle");
   return (
     <div className="relative min-h-dvh p-4 flex flex-col z-10">
       <ParticleBg />
@@ -55,11 +55,11 @@ export default function PlayerPlay() {
       <h1 className="z-10 font-cinzel text-2xl text-center my-4">{q.text}</h1>
       <div className="z-10 grid gap-3 flex-1 content-center">
         {q.options.map((o, i) => (
-          <OptionCard key={i} index={i} text={o} disabled={g.locked} onClick={() => answer(i)} state={stateFor(i) as any} />
+          <OptionCard key={i} index={i} text={o} onClick={() => answer(i)} state={stateFor(i)} />
         ))}
       </div>
-      {g.locked && !g.reveal && (
-        <p className="z-10 text-center font-cinzel text-xl gold-text mt-4">Answer Locked ✓ — Waiting for others…</p>
+      {g.selectedIndex !== undefined && (
+        <p className="z-10 text-center font-cinzel text-xl gold-text mt-4">Answer saved ✓ — tap another to change</p>
       )}
     </div>
   );

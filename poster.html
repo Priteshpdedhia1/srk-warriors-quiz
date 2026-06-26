@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SRK Warriors — 34 Years of SRK</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@700;900&family=Great+Vibes&family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1080px; overflow: hidden; }
+  body {
+    position: relative;
+    font-family: 'Montserrat', sans-serif;
+    color: #fff;
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(212,164,52,0.28), transparent 65%),
+      radial-gradient(ellipse 700px 400px at 50% 115%, rgba(212,164,52,0.22), transparent 60%),
+      radial-gradient(circle at 12% 30%, rgba(212,164,52,0.10), transparent 30%),
+      radial-gradient(circle at 88% 65%, rgba(212,164,52,0.10), transparent 30%),
+      linear-gradient(180deg, #0d0a04 0%, #14100a 50%, #0a0703 100%);
+  }
+
+  /* gold bokeh dots */
+  .bokeh { position: absolute; border-radius: 50%; background: radial-gradient(circle, rgba(255,215,120,0.9), rgba(255,200,80,0.05) 70%); filter: blur(1px); }
+
+  /* gold confetti diamonds */
+  .diamond { position: absolute; background: linear-gradient(135deg, #f6d57a, #b8860b); transform: rotate(45deg); opacity: .8; box-shadow: 0 0 8px rgba(246,213,122,.6); }
+
+  .frame {
+    position: absolute; inset: 26px;
+    border: 2px solid rgba(212,164,52,0.55);
+    outline: 1px solid rgba(212,164,52,0.25);
+    outline-offset: 6px;
+  }
+  .corner { position: absolute; width: 56px; height: 56px; border-color: #f0c75e; border-style: solid; }
+  .corner.tl { top: 16px; left: 16px; border-width: 4px 0 0 4px; }
+  .corner.tr { top: 16px; right: 16px; border-width: 4px 4px 0 0; }
+  .corner.bl { bottom: 16px; left: 16px; border-width: 0 0 4px 4px; }
+  .corner.br { bottom: 16px; right: 16px; border-width: 0 4px 4px 0; }
+
+  .content { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 48px 70px 40px; }
+
+  .script { font-family: 'Great Vibes', cursive; color: #f3e3b3; }
+  .celebrating { font-size: 58px; line-height: 1; text-shadow: 0 2px 14px rgba(0,0,0,.6); }
+
+  .crown { font-size: 44px; line-height: 1; margin-bottom: 2px; filter: drop-shadow(0 0 10px rgba(255,200,80,.7)); }
+
+  .years {
+    font-family: 'Cinzel', serif; font-weight: 900;
+    font-size: 118px; line-height: .95; letter-spacing: 2px;
+    background: linear-gradient(180deg, #fbe8a6 0%, #f0c75e 35%, #c8922a 70%, #f6d57a 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,.8));
+  }
+  .of-line { display: flex; align-items: center; gap: 18px; margin: 6px 0 2px; }
+  .of-line .rule { width: 110px; height: 1px; background: linear-gradient(90deg, transparent, #d4a434); }
+  .of-line .rule.r { background: linear-gradient(270deg, transparent, #d4a434); }
+  .of { font-family: 'Cinzel', serif; font-size: 26px; letter-spacing: 8px; color: #e8d9ad; }
+  .srk {
+    font-family: 'Cinzel', serif; font-weight: 900;
+    font-size: 150px; line-height: .95; letter-spacing: 14px;
+    color: #faf6ea;
+    text-shadow: 0 0 22px rgba(255,225,150,.35), 0 5px 8px rgba(0,0,0,.85);
+  }
+
+  .emblem { margin: 26px 0 10px; display: flex; flex-direction: column; align-items: center; }
+  .emblem-ring {
+    width: 178px; height: 178px; border-radius: 50%;
+    border: 3px solid #f0c75e; outline: 2px solid rgba(212,164,52,.35); outline-offset: 7px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: radial-gradient(circle at 50% 35%, #2a2010, #0d0a04 75%);
+    box-shadow: 0 0 38px rgba(240,199,94,.30), inset 0 0 24px rgba(240,199,94,.18);
+  }
+  .emblem-stars { color: #f0c75e; font-size: 19px; letter-spacing: 5px; }
+  .emblem-srk { font-family: 'Bebas Neue', sans-serif; font-size: 56px; line-height: 1; color: #f0c75e; letter-spacing: 4px; margin: 4px 0 1px; }
+  .emblem-war { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 19px; letter-spacing: 5px; color: #faf6ea; }
+
+  .seven-wrap { display: flex; align-items: baseline; gap: 16px; margin-top: 8px; }
+  .seven-script { font-family: 'Great Vibes', cursive; font-size: 44px; color: #f3e3b3; }
+  .seven {
+    font-family: 'Cinzel', serif; font-weight: 900; font-size: 66px; letter-spacing: 2px;
+    background: linear-gradient(180deg, #fbe8a6, #c8922a);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .warriors-name { font-family: 'Cinzel', serif; font-weight: 900; font-size: 54px; letter-spacing: 6px; color: #faf6ea; text-shadow: 0 3px 6px rgba(0,0,0,.8); margin-top: -2px; }
+
+  .hl-banner {
+    margin-top: 22px;
+    font-family: 'Bebas Neue', sans-serif; font-size: 30px; letter-spacing: 6px; color: #1a1206;
+    background: linear-gradient(90deg, #c8922a, #f6d57a 50%, #c8922a);
+    padding: 7px 46px; clip-path: polygon(4% 0, 96% 0, 100% 50%, 96% 100%, 4% 100%, 0 50%);
+    box-shadow: 0 4px 14px rgba(0,0,0,.6);
+  }
+
+  .highlights { display: flex; justify-content: center; gap: 14px; margin-top: 22px; width: 100%; }
+  .hl { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 9px; padding: 0 6px; border-right: 1px solid rgba(212,164,52,.35); }
+  .hl:last-child { border-right: none; }
+  .hl .icon { font-size: 44px; line-height: 1; filter: drop-shadow(0 3px 6px rgba(0,0,0,.7)); }
+  .hl .label { font-size: 16.5px; font-weight: 700; letter-spacing: .6px; color: #f1e9d4; line-height: 1.25; text-transform: uppercase; }
+
+  .ribbon {
+    position: absolute; left: -62px; top: 295px; transform: rotate(-14deg);
+    background: linear-gradient(180deg, #a31010, #7c0b0b);
+    padding: 12px 70px 14px; box-shadow: 0 6px 18px rgba(0,0,0,.7);
+    border-top: 2px solid #f6d57a; border-bottom: 2px solid #f6d57a;
+    text-align: center; z-index: 5;
+  }
+  .ribbon .l1 { font-family: 'Bebas Neue', sans-serif; font-size: 30px; letter-spacing: 2.5px; color: #ffe9b0; line-height: 1; }
+  .ribbon .l2 { font-family: 'Great Vibes', cursive; font-size: 27px; color: #fff; line-height: 1.05; }
+
+  .footer {
+    margin-top: auto; width: 100%;
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(180deg, rgba(34,26,12,.92), rgba(20,15,7,.95));
+    border: 2px solid #c8922a; border-radius: 60px;
+    padding: 16px 44px;
+    box-shadow: 0 0 26px rgba(240,199,94,.22), inset 0 0 18px rgba(240,199,94,.10);
+  }
+  .f-item { display: flex; align-items: center; gap: 13px; }
+  .f-item .ic { font-size: 36px; }
+  .f-item .txt { font-family: 'Bebas Neue', sans-serif; font-size: 38px; letter-spacing: 2px; color: #faf6ea; line-height: 1; }
+  .f-item .txt small { display: block; font-size: 20px; color: #e8c779; letter-spacing: 3px; }
+  .f-sep { width: 1px; height: 44px; background: linear-gradient(180deg, transparent, #d4a434, transparent); }
+</style>
+</head>
+<body>
+  <!-- bokeh -->
+  <div class="bokeh" style="width:14px;height:14px;top:120px;left:150px;"></div>
+  <div class="bokeh" style="width:9px;height:9px;top:210px;left:935px;"></div>
+  <div class="bokeh" style="width:16px;height:16px;top:430px;left:75px;"></div>
+  <div class="bokeh" style="width:11px;height:11px;top:520px;left:990px;"></div>
+  <div class="bokeh" style="width:8px;height:8px;top:700px;left:120px;"></div>
+  <div class="bokeh" style="width:13px;height:13px;top:660px;left:950px;"></div>
+  <div class="bokeh" style="width:7px;height:7px;top:90px;left:560px;"></div>
+  <div class="bokeh" style="width:10px;height:10px;top:840px;left:880px;opacity:.6;"></div>
+  <!-- confetti -->
+  <div class="diamond" style="width:10px;height:10px;top:160px;left:260px;"></div>
+  <div class="diamond" style="width:8px;height:8px;top:300px;left:870px;"></div>
+  <div class="diamond" style="width:12px;height:12px;top:560px;left:140px;"></div>
+  <div class="diamond" style="width:7px;height:7px;top:240px;left:90px;"></div>
+  <div class="diamond" style="width:9px;height:9px;top:480px;left:925px;"></div>
+  <div class="diamond" style="width:8px;height:8px;top:760px;left:215px;opacity:.5;"></div>
+  <div class="diamond" style="width:10px;height:10px;top:120px;left:820px;"></div>
+
+  <div class="frame"></div>
+  <div class="corner tl"></div><div class="corner tr"></div>
+  <div class="corner bl"></div><div class="corner br"></div>
+
+  <div class="ribbon">
+    <div class="l1">LIMITED SEATS ONLY!</div>
+    <div class="l2">Don&rsquo;t Miss Out!</div>
+  </div>
+
+  <div class="content">
+    <div class="crown">👑</div>
+    <div class="script celebrating">Celebrating</div>
+    <div class="years">34 YEARS</div>
+    <div class="of-line"><span class="rule"></span><span class="of">OF</span><span class="rule r"></span></div>
+    <div class="srk">SRK</div>
+
+    <div class="emblem">
+      <div class="emblem-ring">
+        <div class="emblem-stars">★ ★ ★</div>
+        <div class="emblem-srk">SRK</div>
+        <div class="emblem-war">WARRIORS</div>
+      </div>
+    </div>
+
+    <div class="seven-wrap">
+      <span class="seven-script">Celebrating</span>
+      <span class="seven">7 YEARS</span>
+      <span class="seven-script">of</span>
+    </div>
+    <div class="warriors-name">SRK WARRIORS</div>
+
+    <div class="hl-banner">★ EVENT HIGHLIGHTS ★</div>
+
+    <div class="highlights">
+      <div class="hl"><div class="icon">🎬</div><div class="label">Red Carpet<br>Entry</div></div>
+      <div class="hl"><div class="icon">🎮</div><div class="label">Fun &amp;<br>Exciting Games</div></div>
+      <div class="hl"><div class="icon">⭐</div><div class="label">Great<br>Experience</div></div>
+      <div class="hl"><div class="icon">📸</div><div class="label">Memories<br>To Cherish</div></div>
+      <div class="hl"><div class="icon">🍽️</div><div class="label">Delicious<br>Dinner</div></div>
+    </div>
+
+    <div class="footer">
+      <div class="f-item"><span class="ic">📅</span><span class="txt">20<sup style="font-size:20px;">TH</sup> JUNE</span></div>
+      <div class="f-sep"></div>
+      <div class="f-item"><span class="ic">🕓</span><span class="txt">4 PM</span></div>
+      <div class="f-sep"></div>
+      <div class="f-item"><span class="ic">📍</span><span class="txt">BENGALURU</span></div>
+    </div>
+  </div>
+</body>
+</html>
