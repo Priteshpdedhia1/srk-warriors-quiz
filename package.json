@@ -1,0 +1,12 @@
+{
+  "name": "srk-warriors-quiz",
+  "private": true,
+  "workspaces": ["server", "client", "shared"],
+  "scripts": {
+    "dev": "concurrently -n server,client -c yellow,cyan \"npm:dev:server\" \"npm:dev:client\"",
+    "dev:server": "npm --workspace server run dev",
+    "dev:client": "npm --workspace client run dev",
+    "build": "npm --workspace server run build && npm --workspace client run build"
+  },
+  "devDependencies": { "concurrently": "^9.1.0" }
+}
