@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import "./index.css";
+import BackgroundMusic from "./components/BackgroundMusic";
 import Landing from "./pages/Landing";
 import Rules from "./pages/Rules";
 import HostLogin from "./pages/HostLogin";
@@ -33,6 +34,7 @@ const router = createBrowserRouter([
 const qc = new QueryClient();
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode><QueryClientProvider client={qc}>
+    <BackgroundMusic />
     <RouterProvider router={router} />
   </QueryClientProvider></React.StrictMode>
 );

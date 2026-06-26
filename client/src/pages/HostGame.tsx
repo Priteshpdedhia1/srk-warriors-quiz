@@ -11,6 +11,8 @@ import Controls from "../components/Controls";
 import Leaderboard from "../components/Leaderboard";
 import AnswerBarChart from "../components/AnswerBarChart";
 import ParticleBg from "../components/ParticleBg";
+import SrkLogo from "../components/SrkLogo";
+import { useSettings } from "../store/settingsStore";
 
 export default function HostGame() {
   const { gameId = "" } = useParams(); const nav = useNavigate();
@@ -40,6 +42,12 @@ export default function HostGame() {
   return (
     <div className="relative min-h-dvh p-6 flex flex-col z-10">
       <ParticleBg />
+      <div className="fixed top-4 left-4 z-20 flex items-center gap-2">
+        <SrkLogo size={52} />
+        <button onClick={() => useSettings.getState().toggleMusic()} className="glass px-3 py-2">
+          {useSettings(s => s.music) ? "🎵" : "🔇"}
+        </button>
+      </div>
       <div className="z-10 flex-1 flex flex-col">
         {g.boardVisible && g.leaderboard ? (
           <div className="max-w-3xl mx-auto w-full"><h2 className="font-cinzel text-4xl gold-text text-center mb-6">Leaderboard</h2><Leaderboard rows={g.leaderboard} /></div>
