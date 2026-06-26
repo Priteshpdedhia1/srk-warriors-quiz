@@ -13,8 +13,11 @@ big screen, 100+ simultaneous players on their phones. Premium "King Khan" gold/
 aesthetic. Reused yearly.
 
 - **Deadline:** days → ship reliable core, defer polish.
-- **Run mode:** deployed. Frontend → Vercel, Backend → Railway. SQLite on a Railway
-  **persistent volume** (default disk is ephemeral; must attach volume or DB wipes on redeploy).
+- **Run mode:** deployed, **100% free tier**. Frontend → Vercel (free). Backend → Render
+  free web service (websocket-capable). Database → **Neon Postgres free tier**.
+  SQLite dropped: free backend hosts give no persistent disk, so a SQLite file would reset.
+  Neon = persistent, free, auto-wakes. Prisma `provider = "postgresql"` (schema otherwise
+  identical). Cost = $0.
 - **Auth:** no player login. Host password only (`srkwarriors`), verified server-side.
 - **Questions:** 40 SRK trivia questions generated as seed data, editable later.
 
@@ -44,11 +47,11 @@ srk-warriors-quiz/
 │       ├── socket/         # socket singleton + typed event helpers
 │       ├── lib/            # api (React Query), theme tokens, shared types
 │       └── hooks/
-└── server/                 # Node + Express + Socket.IO + Prisma + SQLite
+└── server/                 # Node + Express + Socket.IO + Prisma + Postgres (Neon)
     └── src/
         ├── index.ts        # http + socket bootstrap
         ├── socket/         # host.ts, player.ts, gameEngine.ts
-        ├── routes/         # host(login), questions, results
+        ├── routes/         # health, host(login), questions, results
         ├── services/       # scoring.ts, winner.ts, gameManager.ts
         └── prisma/         # seed (40 SRK Qs)
     └── prisma/schema.prisma
@@ -67,7 +70,7 @@ receivers. Server broadcasts to room `gameId`; host-only analytics go to room `h
 
 ---
 
-## 3. Data Model (Prisma / SQLite)
+## 3. Data Model (Prisma / Postgres — Neon free tier)
 
 ```prisma
 Game     id, pin(6, unique among active), status(LOBBY|RUNNING|REVEAL|ENDED),
@@ -80,9 +83,9 @@ Answer   id, gameId→, playerId→, questionId→, selectedIndex,
          isCorrect, responseMs, createdAt               @@unique([playerId, questionId])
 ```
 
-- `options` and `Game.settings` stored as JSON columns (avoid over-normalizing 4 fixed
-  options; YAGNI). Settings: `timerSec=30, totalQ=40, leaderboardEvery=5, autoAdvance,
-  sound, music`.
+- `options` and `Game.settings` stored as `Json` columns (Postgres native jsonb; avoid
+  over-normalizing 4 fixed options; YAGNI). Settings: `timerSec=30, totalQ=40,
+  leaderboardEvery=5, autoAdvance, sound, music`.
 - `@@unique([gameId, name])` → duplicate-name prevention enforced at DB level.
 - `@@unique([playerId, questionId])` → double submission impossible at DB level.
 - `responseMs` = server-stamped (question-shown → answer-received). Powers tiebreakers + analytics.
@@ -191,13 +194,24 @@ cards: score, accuracy, total time, fastest, longest streak, avg).
 
 ---
 
-## 9. Deployment
+## 9. Deployment — 100% free tier ($0)
 
-- **client** → Vercel. Env: `VITE_SERVER_URL`.
-- **server** → Railway. Env: `HOST_PASSWORD`, `JWT_SECRET`, `DATABASE_URL`
-  (`file:./data/dev.db` on attached volume), `CORS_ORIGIN`, `PORT`.
-- Railway **persistent volume** mounted at `/data` for SQLite.
-- README covers local dev + both deploys.
+- **client** → **Vercel** (free). Env: `VITE_SERVER_URL`.
+- **server** → **Render** free web service (Node, websocket-capable). Env: `HOST_PASSWORD`,
+  `JWT_SECRET`, `DATABASE_URL` (Neon connection string), `CORS_ORIGIN`, `PORT`.
+- **database** → **Neon** Postgres free tier. `DATABASE_URL` = Neon pooled connection
+  string. Persistent, auto-wakes (<1s) from suspend.
+- **Local dev:** can still use a local SQLite by swapping Prisma `provider`/`DATABASE_URL`,
+  OR point at the same Neon dev branch. README documents both.
+
+### Free-tier limitation (accepted)
+Render free web service **sleeps after ~15min idle** (no persistent disk either — hence
+Postgres not SQLite). Mitigation: free keep-alive pinger (cron-job.org / UptimeRobot)
+hitting `GET /health` every ~10min to keep the backend warm before/around the event. Once
+players are connected the socket traffic keeps it awake. Cold start (~50s) only happens
+if fully idle — warm it up before going live.
+
+- README covers local dev + Vercel + Render + Neon + keep-alive setup.
 
 ---
 
