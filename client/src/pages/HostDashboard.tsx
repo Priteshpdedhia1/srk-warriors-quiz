@@ -14,8 +14,8 @@ export default function HostDashboard() {
         <h2 className="font-cinzel text-4xl gold-text mb-8">Host Dashboard</h2>
         <div className="grid gap-4">
           <GoldButton onClick={() => nav("/host/create")}>CREATE NEW GAME</GoldButton>
+          <button onClick={() => nav("/host/questions")} className="glass px-8 py-3 hover:border-gold-300 transition font-semibold">📝 QUESTION MANAGER</button>
           <button onClick={() => nav("/host/results")} className="glass px-8 py-3 hover:border-gold-300 transition font-semibold">📊 EXPORT RESULTS</button>
-          <button className="glass px-8 py-3 opacity-50 cursor-not-allowed">Question Manager (Phase 2)</button>
           <button onClick={() => { localStorage.removeItem("srk-host-token"); nav("/"); }}
             className="text-gold-300 underline mt-2">Log out</button>
         </div>

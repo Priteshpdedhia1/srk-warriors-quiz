@@ -6,6 +6,7 @@ import { env } from "./env";
 import { health } from "./routes/health";
 import { auth } from "./routes/auth";
 import { results } from "./routes/results";
+import { questions } from "./routes/questions";
 import { prisma } from "./db";
 import { GameManager } from "./services/gameManager";
 import { registerSockets } from "./socket";
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use(health);
 app.use(auth);
 app.use(results);
+app.use(questions);
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, { cors: { origin: corsOrigin } });
