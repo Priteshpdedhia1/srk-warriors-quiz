@@ -13,7 +13,7 @@ export default function BackgroundMusic() {
 
   useEffect(() => {
     if (!ref.current) {
-      const a = new Audio("/music.mp3");
+      const a = new Audio(`${import.meta.env.BASE_URL}music.mp3`);
       a.loop = true; a.volume = 0.25;
       ref.current = a;
     }

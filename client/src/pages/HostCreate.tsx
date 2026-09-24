@@ -12,7 +12,7 @@ export default function HostCreate() {
   const nav = useNavigate();
   const [pin, setPin] = useState(""); const [gameId, setGameId] = useState("");
   const [players, setPlayers] = useState<PlayerPublic[]>([]);
-  const joinUrl = `${window.location.origin}/join`;
+  const joinUrl = `${window.location.origin}${import.meta.env.BASE_URL}join`;
 
   useEffect(() => {
     socket.emit("host:create", { token: getToken(), settings: DEFAULT_SETTINGS }, (r) => {

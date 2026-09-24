@@ -15,7 +15,7 @@ export default function SrkLogo({ size = 150 }: { size?: number }) {
         border: "2px solid rgba(240,199,94,.65)",
         background: "radial-gradient(circle at 50% 35%, #2a2010, #0d0a04 75%)" }}>
       {ok
-        ? <img src="/logo.png" alt="SRK Warriors" onError={() => setOk(false)}
+        ? <img src={`${import.meta.env.BASE_URL}logo.png`} alt="SRK Warriors" onError={() => setOk(false)}
             className="w-full h-full object-cover" />
         : <div className="w-full h-full flex items-center justify-center" style={{ fontSize: size * 0.4 }}>👑</div>}
     </motion.div>

@@ -39,7 +39,7 @@ const router = createBrowserRouter([
     { path: "/play", element: <PlayerPlay /> },
     { path: "/play/end", element: <PlayerEnd /> },
   ] },
-]);
+], { basename: "/quiz" });
 const qc = new QueryClient();
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode><QueryClientProvider client={qc}>

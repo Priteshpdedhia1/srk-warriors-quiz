@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 
-const imgs = [1, 2, 3, 4, 5, 6].map(n => `/srk/${n}.jpg`);
+const imgs = [1, 2, 3, 4, 5, 6].map(n => `${import.meta.env.BASE_URL}srk/${n}.jpg`);
 
 // Auto-scrolling strip of gold-framed SRK photos. The row is duplicated so the
 // loop is seamless, with a fade mask on both edges.
