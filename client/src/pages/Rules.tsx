@@ -1,3 +1,4 @@
+// Rules: 20 questions, 30/40/30 mix, 2-3 fan-feud (updated 2026-09).
 import { useNavigate } from "react-router-dom";
 import GlassCard from "../components/GlassCard";
 import ParticleBg from "../components/ParticleBg";
