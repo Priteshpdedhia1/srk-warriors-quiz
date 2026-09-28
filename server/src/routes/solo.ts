@@ -2,9 +2,9 @@ import { Router } from "express";
 import { prisma } from "../db";
 import { startSession, getSession, submitSolo, finalize, type SoloQuestion } from "../services/soloManager";
 import { resolveRanking, type RankInput } from "../services/ranking";
-import { pickWithFeud } from "../util";
+import { pickBalanced } from "../util";
 
-const SOLO_QUESTION_COUNT = 40;
+const SOLO_QUESTION_COUNT = 20;
 
 export const solo = Router();
 
@@ -30,9 +30,9 @@ solo.post("/solo/start", async (req, res) => {
   if (!name) return res.status(400).json({ ok: false, error: "Name required" });
   const existing = await prisma.soloResult.findUnique({ where: { name } });
   if (existing) return res.status(409).json({ ok: false, error: "That name has already played" });
-  // Random 40 in random order from the full pool, fresh each attempt,
-  // GUARANTEEING 2–3 fan-feud questions (un-Googleable anti-cheat).
-  const questions = pickWithFeud(await loadQuestions(), SOLO_QUESTION_COUNT);
+  // 20 questions per attempt, fresh each time: guarantees 2–3 fan-feud
+  // (un-Googleable anti-cheat) and a ~30/40/30 easy/med/hard mix.
+  const questions = pickBalanced(await loadQuestions(), SOLO_QUESTION_COUNT);
   if (questions.length === 0) return res.status(500).json({ ok: false, error: "No questions available" });
   res.json({ ok: true, ...startSession(name, questions) });
 });

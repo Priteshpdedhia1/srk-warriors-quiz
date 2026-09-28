@@ -1,7 +1,7 @@
 import { EventEmitter } from "node:events";
 import { scoreAnswer } from "./scoring";
 import { resolveRanking } from "./ranking";
-import { pickWithFeud } from "../util";
+import { pickBalanced } from "../util";
 import type { GameSettings, PublicQuestion, GameStatus, PlayerStateSnapshot } from "../../../shared/types";
 
 export interface SeedQuestion {
@@ -53,9 +53,9 @@ export class GameManager extends EventEmitter {
   getPlayer(gameId: string, playerId: string) { return this.games.get(gameId)?.players.get(playerId); }
 
   async createGame(settings: GameSettings) {
-    // Random subset in random order, drawn from the full pool, GUARANTEEING
-    // 2–3 fan-feud questions per game (un-Googleable anti-cheat).
-    const questions = pickWithFeud(await this.deps.loadQuestions(), settings.totalQ);
+    // Random subset drawn from the full pool: guarantees 2–3 fan-feud questions
+    // (un-Googleable anti-cheat) and a ~30/40/30 easy/med/hard mix across the game.
+    const questions = pickBalanced(await this.deps.loadQuestions(), settings.totalQ);
     let pin = genPin(); while (this.getGameByPin(pin)) pin = genPin();
     const id = "g_" + Math.random().toString(36).slice(2, 10);
     const game: LiveGame = {
