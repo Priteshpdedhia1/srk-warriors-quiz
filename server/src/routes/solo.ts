@@ -2,6 +2,9 @@ import { Router } from "express";
 import { prisma } from "../db";
 import { startSession, getSession, submitSolo, finalize, type SoloQuestion } from "../services/soloManager";
 import { resolveRanking, type RankInput } from "../services/ranking";
+import { shuffle } from "../util";
+
+const SOLO_QUESTION_COUNT = 40;
 
 export const solo = Router();
 
@@ -27,7 +30,8 @@ solo.post("/solo/start", async (req, res) => {
   if (!name) return res.status(400).json({ ok: false, error: "Name required" });
   const existing = await prisma.soloResult.findUnique({ where: { name } });
   if (existing) return res.status(409).json({ ok: false, error: "That name has already played" });
-  const questions = (await loadQuestions()).slice(0, 40);
+  // Random 40 in random order from the full pool, fresh each attempt.
+  const questions = shuffle(await loadQuestions()).slice(0, SOLO_QUESTION_COUNT);
   if (questions.length === 0) return res.status(500).json({ ok: false, error: "No questions available" });
   res.json({ ok: true, ...startSession(name, questions) });
 });

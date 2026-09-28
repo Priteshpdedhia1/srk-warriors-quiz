@@ -32,6 +32,27 @@ questions.get("/questions", async (req, res) => {
   res.json({ ok: true, questions: rows.map(toDto) });
 });
 
+// Bulk import questions. Body: { questions: Q[], replace?: boolean }.
+// replace=true wipes the bank first (fresh set); otherwise appends.
+const importBody = z.object({
+  questions: z.array(qBody).min(1).max(2000),
+  replace: z.boolean().optional(),
+});
+questions.post("/questions/import", async (req, res) => {
+  if (!authed(req)) return res.status(401).json({ ok: false, error: "Unauthorized" });
+  const parsed = importBody.safeParse(req.body);
+  if (!parsed.success) {
+    const i = parsed.error.issues[0];
+    return res.status(400).json({ ok: false, error: `${i?.path?.join(".") ?? ""} ${i?.message ?? "Invalid"}`.trim() });
+  }
+  if (parsed.data.replace) await prisma.question.deleteMany();
+  const start = (await prisma.question.aggregate({ _max: { order: true } }))._max.order ?? -1;
+  const data = parsed.data.questions.map((q, i) => ({ ...q, order: start + 1 + i }));
+  const r = await prisma.question.createMany({ data });
+  const total = await prisma.question.count();
+  res.json({ ok: true, added: r.count, total });
+});
+
 // Create a new question (appended at the end)
 questions.post("/questions", async (req, res) => {
   if (!authed(req)) return res.status(401).json({ ok: false, error: "Unauthorized" });

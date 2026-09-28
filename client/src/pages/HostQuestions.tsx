@@ -22,6 +22,10 @@ export default function HostQuestions() {
   const [list, setList] = useState<Q[]>([]);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
+  const [showImport, setShowImport] = useState(false);
+  const [importText, setImportText] = useState("");
+  const [replaceAll, setReplaceAll] = useState(false);
+  const [importMsg, setImportMsg] = useState("");
 
   const load = () => {
     setLoading(true);
@@ -40,6 +44,22 @@ export default function HostQuestions() {
     else alert(d.error ?? "Could not add");
   };
 
+  const runImport = async () => {
+    setImportMsg("");
+    let questions: unknown;
+    try { questions = JSON.parse(importText); } catch { setImportMsg("❌ Invalid JSON"); return; }
+    if (!Array.isArray(questions)) { setImportMsg("❌ JSON must be an array of questions"); return; }
+    if (replaceAll && !confirm(`Replace ALL questions with these ${questions.length}? This deletes the current bank.`)) return;
+    setImportMsg("Importing…");
+    try {
+      const res = await fetch(`${base()}/questions/import`, { method: "POST", headers: authHeaders(),
+        body: JSON.stringify({ questions, replace: replaceAll }) });
+      const d = await res.json();
+      if (d.ok) { setImportMsg(`✓ Imported ${d.added}. Bank now has ${d.total}.`); setImportText(""); load(); }
+      else setImportMsg(`❌ ${d.error ?? "Import failed"}`);
+    } catch { setImportMsg("❌ Could not reach the server"); }
+  };
+
   return (
     <div className="relative min-h-dvh p-6 z-10">
       <ParticleBg />
@@ -48,7 +68,31 @@ export default function HostQuestions() {
           <h1 className="font-cinzel text-3xl gold-text">Question Manager</h1>
           <button onClick={() => nav("/host")} className="text-gold-300 underline">← Dashboard</button>
         </div>
-        <p className="text-cream-dim text-sm mb-4">{list.length} questions · changes apply to the next game you create.</p>
+        <p className="text-cream-dim text-sm mb-3">{list.length} questions · each game/solo attempt draws a random shuffled subset · changes apply to the next game.</p>
+
+        <div className="glass p-4 mb-5">
+          <button onClick={() => setShowImport(s => !s)} className="font-semibold text-gold-300">
+            {showImport ? "▾" : "▸"} Bulk import (JSON)
+          </button>
+          {showImport && (
+            <div className="mt-3 space-y-2">
+              <p className="text-cream-dim text-xs">Paste a JSON array. Each item: {"{ text, options:[4 strings], correctIndex:0-3, explanation?, difficulty?:\"EASY|MED|HARD\", category? }"}</p>
+              <textarea value={importText} onChange={e => setImportText(e.target.value)} rows={8}
+                placeholder='[{"text":"...","options":["A","B","C","D"],"correctIndex":0,"category":"Movies"}]'
+                className="w-full bg-ink-700 border border-gold-500/40 rounded-lg px-3 py-2 outline-none focus:border-gold-300 font-mono text-xs" />
+              <label className="flex items-center gap-2 text-sm text-cream-dim">
+                <input type="checkbox" checked={replaceAll} onChange={e => setReplaceAll(e.target.checked)} />
+                Replace the entire bank (delete existing first)
+              </label>
+              <div className="flex items-center gap-3">
+                <button onClick={runImport} disabled={!importText.trim()}
+                  className="font-bebas tracking-wide text-ink-900 px-5 py-2 rounded-full bg-gradient-to-r from-gold-700 via-gold-100 to-gold-700 disabled:opacity-50">Import</button>
+                {importMsg && <span className="text-sm">{importMsg}</span>}
+              </div>
+            </div>
+          )}
+        </div>
+
         {loading && <p className="text-cream-dim">Loading…</p>}
         {err && <p className="text-ruby">{err}</p>}
         <div className="space-y-4">

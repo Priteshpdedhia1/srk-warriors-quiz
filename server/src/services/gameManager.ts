@@ -1,6 +1,7 @@
 import { EventEmitter } from "node:events";
 import { scoreAnswer } from "./scoring";
 import { resolveRanking } from "./ranking";
+import { shuffle } from "../util";
 import type { GameSettings, PublicQuestion, GameStatus, PlayerStateSnapshot } from "../../../shared/types";
 
 export interface SeedQuestion {
@@ -52,7 +53,8 @@ export class GameManager extends EventEmitter {
   getPlayer(gameId: string, playerId: string) { return this.games.get(gameId)?.players.get(playerId); }
 
   async createGame(settings: GameSettings) {
-    const questions = (await this.deps.loadQuestions()).slice(0, settings.totalQ);
+    // Random subset in random order, drawn from the full pool.
+    const questions = shuffle(await this.deps.loadQuestions()).slice(0, settings.totalQ);
     let pin = genPin(); while (this.getGameByPin(pin)) pin = genPin();
     const id = "g_" + Math.random().toString(36).slice(2, 10);
     const game: LiveGame = {
