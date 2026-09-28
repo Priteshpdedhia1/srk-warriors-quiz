@@ -2,10 +2,11 @@ import { useNavigate } from "react-router-dom";
 import GlassCard from "../components/GlassCard";
 import ParticleBg from "../components/ParticleBg";
 const RULES = [
-  "40 questions. 30 seconds each. 1 point per correct answer.",
+  "20 questions, 30 seconds each. 1 point per correct answer.",
+  "A balanced mix — roughly 30% easy, 40% medium, 30% hard.",
+  "Every quiz has 2–3 Fan Feud questions — pure SRK fandom, no Googling or AI will help.",
   "Answer fast — ties are broken by total response time.",
-  "One answer per question. No changing once locked.",
-  "Leaderboard updates every 5 questions.",
+  "One attempt per name — make it count.",
   "Stay connected — you'll auto-reconnect if you drop.",
 ];
 export default function Rules() {
