@@ -82,3 +82,17 @@ model Answer {
   @@unique([playerId, questionId])
   @@index([gameId, questionId])
 }
+
+model SoloResult {
+  id         String   @id @default(cuid())
+  name       String   @unique
+  score      Int
+  totalMs    Int
+  correct    Int
+  wrong      Int
+  fastestMs  Int?
+  bestStreak Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  @@index([score])
+}

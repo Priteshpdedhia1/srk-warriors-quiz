@@ -26,8 +26,10 @@ export default function Landing() {
       </motion.div>
       <div className="z-10 w-full max-w-5xl my-8"><SrkMarquee /></div>
       <div className="z-10 flex flex-wrap gap-4 justify-center">
+        <GoldButton onClick={() => nav("/solo")}>PLAY NOW</GoldButton>
+        <GoldButton onClick={() => nav("/leaderboard")}>LEADERBOARD</GoldButton>
         <GoldButton onClick={() => nav("/host/login")}>HOST QUIZ</GoldButton>
-        <GoldButton onClick={() => nav("/join")}>JOIN QUIZ</GoldButton>
+        <GoldButton onClick={() => nav("/join")}>JOIN LIVE</GoldButton>
         <GoldButton onClick={() => nav("/rules")}>RULES</GoldButton>
       </div>
     </div>

@@ -7,6 +7,7 @@ import { health } from "./routes/health";
 import { auth } from "./routes/auth";
 import { results } from "./routes/results";
 import { questions } from "./routes/questions";
+import { solo } from "./routes/solo";
 import { prisma } from "./db";
 import { GameManager } from "./services/gameManager";
 import { registerSockets } from "./socket";
@@ -23,6 +24,7 @@ app.use(health);
 app.use(auth);
 app.use(results);
 app.use(questions);
+app.use(solo);
 
 const httpServer = createServer(app);
 const io = new Server(httpServer, { cors: { origin: corsOrigin } });
