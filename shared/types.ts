@@ -49,7 +49,7 @@ export interface GameSettings {
 }
 
 export const DEFAULT_SETTINGS: GameSettings = {
-  timerSec: 30, totalQ: 40, leaderboardEvery: 5,
+  timerSec: 30, totalQ: 20, leaderboardEvery: 5,
   autoAdvance: false, sound: true, music: true,
 };
 

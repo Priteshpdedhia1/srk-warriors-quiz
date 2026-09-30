@@ -34,7 +34,7 @@ export default function Solo() {
       <GlassCard className="z-10 w-full max-w-sm flex flex-col items-center">
         <SrkLogo size={100} />
         <h2 className="font-cinzel text-2xl gold-text text-center mb-1 mt-3">Take the Quiz</h2>
-        <p className="text-cream-dim text-sm text-center mb-5">40 questions · 30s each · one attempt</p>
+        <p className="text-cream-dim text-sm text-center mb-5">20 questions · 30s each · one attempt</p>
         <form onSubmit={start} className="space-y-3 w-full">
           <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name" required
             className="w-full bg-ink-700 border border-gold-500/40 rounded-xl px-4 py-3 outline-none focus:border-gold-300" />
