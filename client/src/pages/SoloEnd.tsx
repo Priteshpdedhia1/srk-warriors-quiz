@@ -41,6 +41,16 @@ export default function SoloEnd() {
         </div>
       </GlassCard>
 
+      <GlassCard className="z-10 text-center max-w-sm w-full border border-gold-300">
+        <div className="text-3xl mb-1">👑</div>
+        <h3 className="font-cinzel text-2xl gold-text mb-1">Become an SRK Warrior</h3>
+        <p className="text-cream-dim text-sm mb-4">Loved the quiz? Register and join the SRK Warriors community — events, meetups &amp; more.</p>
+        <a href="https://teamsrkwarriors.in/join" target="_blank" rel="noopener noreferrer"
+          className="inline-block font-bebas tracking-wide text-ink-900 px-8 py-3 rounded-full bg-gradient-to-r from-gold-700 via-gold-100 to-gold-700 hover:brightness-110">
+          REGISTER &amp; JOIN →
+        </a>
+      </GlassCard>
+
       <div className="z-10 w-full max-w-sm">
         <h3 className="font-cinzel text-xl gold-text text-center mb-3">Your Answers</h3>
         <div className="space-y-2">
