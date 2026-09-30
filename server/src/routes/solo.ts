@@ -3,10 +3,17 @@ import { prisma } from "../db";
 import { startSession, getSession, submitSolo, finalize, type SoloQuestion } from "../services/soloManager";
 import { resolveRanking, type RankInput } from "../services/ranking";
 import { pickBalanced } from "../util";
+import { verifyHost } from "./auth";
 
 const SOLO_QUESTION_COUNT = 20;
 
 export const solo = Router();
+
+// Host-only: verify JWT from Authorization: Bearer <jwt> or ?token=
+function hostAuthed(req: any): boolean {
+  const header = (req.headers.authorization || "").replace(/^Bearer\s+/i, "");
+  return verifyHost((req.query.token as string) || header);
+}
 
 async function loadQuestions(): Promise<SoloQuestion[]> {
   const qs = await prisma.question.findMany({ orderBy: { order: "asc" } });
@@ -56,6 +63,15 @@ solo.post("/solo/answer", async (req, res) => {
   const ranked = await rankedResults();
   const me = ranked.find(x => x.name === result.name);
   res.json({ ok: true, done: true, result, rank: me?.rank ?? null, total: ranked.length, answerKey: result.answerKey });
+});
+
+// Host-only: remove a leaderboard entry by name (test rows, bad/offensive names).
+// This also frees the name so that person could play again.
+solo.delete("/solo/leaderboard/:name", async (req, res) => {
+  if (!hostAuthed(req)) return res.status(401).json({ ok: false, error: "Unauthorized" });
+  const name = String(req.params.name || "");
+  const r = await prisma.soloResult.deleteMany({ where: { name } });
+  res.json({ ok: true, deleted: r.count });
 });
 
 // Public all-time leaderboard.
