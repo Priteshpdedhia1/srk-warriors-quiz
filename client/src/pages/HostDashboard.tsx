@@ -15,6 +15,7 @@ export default function HostDashboard() {
         <div className="grid gap-4">
           <GoldButton onClick={() => nav("/host/create")}>CREATE NEW GAME</GoldButton>
           <button onClick={() => nav("/host/questions")} className="glass px-8 py-3 hover:border-gold-300 transition font-semibold">📝 QUESTION MANAGER</button>
+          <button onClick={() => nav("/host/leaderboard")} className="glass px-8 py-3 hover:border-gold-300 transition font-semibold">🏆 MANAGE LEADERBOARD</button>
           <button onClick={() => nav("/host/results")} className="glass px-8 py-3 hover:border-gold-300 transition font-semibold">📊 EXPORT RESULTS</button>
           <button onClick={() => { localStorage.removeItem("srk-host-token"); nav("/"); }}
             className="text-gold-300 underline mt-2">Log out</button>

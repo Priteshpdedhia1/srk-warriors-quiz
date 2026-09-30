@@ -12,6 +12,7 @@ import HostDashboard from "./pages/HostDashboard";
 import HostCreate from "./pages/HostCreate";
 import HostResults from "./pages/HostResults";
 import HostQuestions from "./pages/HostQuestions";
+import HostLeaderboard from "./pages/HostLeaderboard";
 import Solo from "./pages/Solo";
 import SoloPlay from "./pages/SoloPlay";
 import SoloEnd from "./pages/SoloEnd";
@@ -40,6 +41,7 @@ const router = createBrowserRouter([
     { path: "/host/create", element: <HostCreate /> },
     { path: "/host/results", element: <HostResults /> },
     { path: "/host/questions", element: <HostQuestions /> },
+    { path: "/host/leaderboard", element: <HostLeaderboard /> },
     { path: "/host/game/:gameId", element: <HostGame /> },
     { path: "/host/end/:gameId", element: <HostEnd /> },
     { path: "/join", element: <Join /> },
