@@ -15,6 +15,17 @@ const isFeud = (c: string) => c.trim().toLowerCase() === FAN_FEUD_CATEGORY.toLow
 
 type Diff = "EASY" | "MED" | "HARD";
 
+// Shuffle a question's answer options and remap correctIndex to match, so each
+// attempt can present options in a different order without breaking scoring.
+export function shuffleOptions<T extends { options: string[]; correctIndex: number }>(q: T): T {
+  const order = q.options.map((_, i) => i);
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  return { ...q, options: order.map(i => q.options[i]), correctIndex: order.indexOf(q.correctIndex) };
+}
+
 // Pick `total` questions for one attempt with two guarantees:
 //  1. between `feudMin` and `feudMax` fan-feud questions (random each time), and
 //  2. an overall difficulty mix of ~30% EASY / 40% MED / 30% HARD across the whole
@@ -22,7 +33,7 @@ type Diff = "EASY" | "MED" | "HARD";
 // Everything is shuffled so feud questions aren't clustered. Degrades gracefully:
 // if a tier or the feud pool is short, it fills from whatever remains, never
 // exceeding `total` and never duplicating.
-export function pickBalanced<T extends { category: string; difficulty: Diff }>(
+export function pickBalanced<T extends { category: string; difficulty: Diff; options: string[]; correctIndex: number }>(
   pool: T[], total: number, feudMin = 2, feudMax = 3,
 ): T[] {
   const feud = shuffle(pool.filter(q => isFeud(q.category)));
@@ -60,5 +71,6 @@ export function pickBalanced<T extends { category: string; difficulty: Diff }>(
       result.push(q);
     }
   }
-  return shuffle(result);
+  // Shuffle question order AND each question's answer options (per attempt).
+  return shuffle(result).map(shuffleOptions);
 }
