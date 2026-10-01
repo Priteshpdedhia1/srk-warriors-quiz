@@ -49,11 +49,14 @@ export default function SoloPlay() {
     } catch { busy.current = false; }
   };
 
-  // auto-submit as "no answer" when the timer runs out
+  // auto-submit as "no answer" when the timer runs out. Gate on the actual
+  // local deadline for THIS question (not just `remaining`, which can read 0 on
+  // the first frame or be stale across a question change — that skipped Q1).
   const q = s.question;
   useEffect(() => {
     if (!q) return;
-    if (remaining <= 0 && !busy.current && timedOutFor.current !== q.id) {
+    const expired = remaining <= 0 && Date.now() >= deadline.current.at && deadline.current.id === q.id;
+    if (expired && !busy.current && timedOutFor.current !== q.id) {
       timedOutFor.current = q.id;
       submit(-1);
     }
