@@ -6,10 +6,20 @@ import CircularTimer from "../components/CircularTimer";
 import OptionCard from "../components/OptionCard";
 import ParticleBg from "../components/ParticleBg";
 
+const QUESTION_MS = 30000;
+const isFeud = (c?: string) => (c || "").trim().toLowerCase() === "fan feud";
+
 export default function SoloPlay() {
   const nav = useNavigate();
   const s = useSolo();
-  const remaining = useCountdown(s.endsAt, false);
+  // Client-local per-question deadline, set during render the moment a new
+  // question appears. Using the server's absolute endsAt vs the client clock
+  // caused instant time-outs (and skipped Q1) when the client clock ran ahead.
+  const deadline = useRef<{ id?: string; at: number }>({ at: Date.now() + QUESTION_MS });
+  if (s.question && deadline.current.id !== s.question.id) {
+    deadline.current = { id: s.question.id, at: Date.now() + QUESTION_MS };
+  }
+  const remaining = useCountdown(deadline.current.at, false);
   const busy = useRef(false);
   const timedOutFor = useRef<string | null>(null);
 
@@ -59,6 +69,13 @@ export default function SoloPlay() {
         <CircularTimer remainingMs={remaining} totalMs={30000} size={90} />
         <span className="font-bebas text-xl text-cream-soft">SOLO</span>
       </div>
+      {isFeud(q.category) && (
+        <div className="z-10 text-center mt-2">
+          <span className="inline-block text-xs font-bebas tracking-widest px-3 py-1 rounded-full bg-gold-700/30 border border-gold-300 text-gold-100">
+            🗳️ FAN FEUD · pick the fan favourite
+          </span>
+        </div>
+      )}
       <h1 className="z-10 font-cinzel text-2xl text-center my-4">{q.text}</h1>
       <div className="z-10 grid gap-3 flex-1 content-center">
         {q.options.map((o, i) => (

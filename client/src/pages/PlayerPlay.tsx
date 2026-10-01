@@ -8,6 +8,8 @@ import CircularTimer from "../components/CircularTimer";
 import OptionCard from "../components/OptionCard";
 import ParticleBg from "../components/ParticleBg";
 
+const isFeud = (c?: string) => (c || "").trim().toLowerCase() === "fan feud";
+
 export default function PlayerPlay() {
   const nav = useNavigate(); const g = useGame();
   const remaining = useCountdown(g.endsAt, g.paused);
@@ -58,6 +60,13 @@ export default function PlayerPlay() {
         <CircularTimer remainingMs={g.paused ? 0 : remaining} totalMs={30000} size={90} />
         <span className="font-bebas text-xl">⭐{g.score} 🔥{g.streak}</span>
       </div>
+      {isFeud(q.category) && (
+        <div className="z-10 text-center mt-2">
+          <span className="inline-block text-xs font-bebas tracking-widest px-3 py-1 rounded-full bg-gold-700/30 border border-gold-300 text-gold-100">
+            🗳️ FAN FEUD · pick the fan favourite
+          </span>
+        </div>
+      )}
       <h1 className="z-10 font-cinzel text-2xl text-center my-4">{q.text}</h1>
       <div className="z-10 grid gap-3 flex-1 content-center">
         {q.options.map((o, i) => (
