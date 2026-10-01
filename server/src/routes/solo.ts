@@ -76,7 +76,7 @@ solo.delete("/solo/leaderboard/:name", async (req, res) => {
 
 // Public all-time leaderboard.
 solo.get("/solo/leaderboard", async (req, res) => {
-  const limit = Math.min(Number(req.query.limit) || 50, 200);
+  const limit = Math.min(Number(req.query.limit) || 5000, 5000);
   const ranked = await rankedResults();
   res.json({ ok: true, total: ranked.length, rows: ranked.slice(0, limit).map(r => ({
     rank: r.rank, playerId: r.playerId, name: r.name, score: r.score, totalMs: r.totalMs,
